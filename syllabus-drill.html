@@ -271,6 +271,7 @@ Rules:
 - "source": a short pointer to where the topic appears in the material, such as "Week 3" or "Unit 2: Markets".
 - "topic": 1-3 words naming the concept.
 - "explanation": 1-2 sentences that teach why the answer is right.
+- Write math as plain text with Unicode symbols (A⁻¹, Aᵀ, λ, ≠, ≤, x₁, ·), never LaTeX. Do not use backslashes anywhere.
 
 Reply with only JSON in exactly this shape:
 {"title": "short quiz title naming the course and topics",
@@ -280,6 +281,13 @@ Reply with only JSON in exactly this shape:
   {"type": "short", "topic": "...", "source": "...", "question": "...", "answer": "model answer", "explanation": "..."}
  ]}
 "answer" is the 0-based index of the correct choice for "mc", a boolean for "tf", and a model answer string for "short".`;
+}
+
+function repairJson(text) {
+  const a = text.indexOf("{"), b = text.lastIndexOf("}");
+  if (a < 0 || b <= a) return null;
+  const body = text.slice(a, b + 1).replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, "\\\\");
+  try { return JSON.parse(body); } catch { return null; }
 }
 
 function normalize(raw) {
@@ -332,13 +340,20 @@ async function generate(s) {
   renderWorking(s.count);
   $("#go").disabled = true;
   try {
-    const raw = await sample.json(buildPrompt(s), {
-      signal: ctl.signal, cache: false,
-      onText: ({ text }) => {
-        const n = (text.match(/"question"\s*:/g) || []).length;
-        setProgress(n, s.count);
-      },
-    });
+    let raw;
+    try {
+      raw = await sample.json(buildPrompt(s), {
+        signal: ctl.signal, cache: false,
+        onText: ({ text }) => {
+          const n = (text.match(/"question"\s*:/g) || []).length;
+          setProgress(n, s.count);
+        },
+      });
+    } catch (e) {
+      // Math quizzes sometimes come back with LaTeX like \lambda, which is not valid JSON. Repair and retry the parse.
+      raw = e?.code === "invalid_json" && e.text ? repairJson(e.text) : null;
+      if (!raw) throw e;
+    }
     const quiz = normalize(raw);
     if (!quiz.questions.length) throw { code: "invalid_json" };
     state = { quiz, answers: quiz.questions.map(() => ({ status: "open" })), isExample: false };
