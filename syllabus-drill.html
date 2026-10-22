@@ -1,0 +1,630 @@
+<title>Syllabus Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: exam-booklet workbench. Course material on the left, the quiz "booklet" on the right; stacks on phones. */
+:root {
+  --paper: #f3f6fb;
+  --sheet: #ffffff;
+  --ink: #18284a;
+  --ink-soft: #52607d;
+  --rule: #cfdaeb;
+  --navy: #1f3f8f;
+  --navy-ink: #ffffff;
+  --hilite: #ffe36b;
+  --hilite-ink: #2a2300;
+  --right: #1d7a4e;
+  --right-bg: #e3f4ea;
+  --wrong: #b4322a;
+  --wrong-bg: #fbe7e4;
+  --shadow: 0 1px 2px rgba(24, 40, 74, .06), 0 4px 16px rgba(24, 40, 74, .06);
+  --f-display: "Young Serif", Georgia, "Times New Roman", serif;
+  --f-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1522; --sheet: #172033; --ink: #e4eaf6; --ink-soft: #9aa8c4; --rule: #2b3854;
+    --navy: #8fb0ff; --navy-ink: #0f1522; --hilite: #e8c84a; --hilite-ink: #1d1800;
+    --right: #6fd29e; --right-bg: #173426; --wrong: #ff8f84; --wrong-bg: #3a1c1b;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1522; --sheet: #172033; --ink: #e4eaf6; --ink-soft: #9aa8c4; --rule: #2b3854;
+  --navy: #8fb0ff; --navy-ink: #0f1522; --hilite: #e8c84a; --hilite-ink: #1d1800;
+  --right: #6fd29e; --right-bg: #173426; --wrong: #ff8f84; --wrong-bg: #3a1c1b;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+@media (max-width: 480px) { .wrap { padding-inline: 16px; } }
+
+.masthead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; padding-bottom: 18px; margin-bottom: 24px; border-bottom: 2px solid var(--ink); }
+.masthead h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0; letter-spacing: -.01em; }
+.masthead h1 mark { background: linear-gradient(transparent 55%, var(--hilite) 55%, var(--hilite) 92%, transparent 92%); color: inherit; padding: 0 .08em; }
+.masthead p { margin: 0; color: var(--ink-soft); max-width: 46ch; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 880px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.label { font-family: var(--f-mono); font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* Left: course material */
+.panel { display: flex; flex-direction: column; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+@media (max-width: 880px) { .panel { position: static; } }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+textarea, input[type="text"] { font: inherit; color: var(--ink); background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 6px; padding: 12px 14px; width: 100%; }
+#syllabus { min-height: 260px; resize: vertical; font-size: 14px; line-height: 1.5;
+  background-image: linear-gradient(var(--sheet), var(--sheet)); }
+textarea:focus, input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 22%, transparent); }
+#syllabus.drag { border-style: dashed; border-color: var(--navy); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13px; color: var(--ink-soft); }
+.linkbtn { font: inherit; font-size: 13px; color: var(--navy); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.linkbtn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 2px; }
+
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { font-size: 14px; padding: 6px 12px; border: 1.5px solid var(--rule); border-radius: 999px; cursor: pointer; background: var(--sheet); user-select: none; }
+.seg input:checked + label { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.seg input:focus-visible + label { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+.btn { font: inherit; font-weight: 700; font-size: 15px; border-radius: 6px; padding: 11px 18px; cursor: pointer; border: 1.5px solid var(--ink); background: var(--sheet); color: var(--ink); }
+.btn.primary { background: var(--navy); border-color: var(--navy); color: var(--navy-ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible { outline: 3px solid var(--hilite); outline-offset: 2px; }
+.btn:not(:disabled):hover { filter: brightness(1.08); }
+#go { width: 100%; padding-block: 14px; font-size: 16px; }
+.notice { font-size: 13.5px; color: var(--ink-soft); background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; }
+.error { color: var(--wrong); background: var(--wrong-bg); border-color: transparent; }
+
+/* Right: the booklet */
+.booklet { background: var(--sheet); border-radius: 10px; box-shadow: var(--shadow); min-width: 0; overflow: hidden; }
+.cover { padding: 22px 26px 18px; border-bottom: 1px solid var(--rule);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule) 27px 28px); background-position: 0 6px; }
+.cover-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: center; }
+.example-pill { font-family: var(--f-mono); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--hilite); color: var(--hilite-ink); padding: 3px 8px; border-radius: 4px; }
+.cover h2 { font-family: var(--f-display); font-weight: 400; font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15; margin: 10px 0 14px; text-wrap: balance; background: var(--sheet); display: inline; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding-right: 6px; }
+.scorebar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; margin-top: 16px; }
+.score { font-family: var(--f-mono); font-size: 15px; font-variant-numeric: tabular-nums; background: var(--sheet); padding: 2px 6px 2px 0; }
+.score b { font-size: 22px; }
+.ticks { display: flex; flex-wrap: wrap; gap: 5px; }
+.tick { width: 22px; height: 22px; border-radius: 4px; border: 1.5px solid var(--rule); background: var(--sheet); font-family: var(--f-mono); font-size: 10.5px; display: grid; place-items: center; color: var(--ink-soft); cursor: pointer; padding: 0; }
+.tick.right { background: var(--right); border-color: var(--right); color: var(--sheet); }
+.tick.wrong { background: var(--wrong); border-color: var(--wrong); color: var(--sheet); }
+.tick:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+
+.questions { list-style: none; margin: 0; padding: 0; }
+.q { padding: 22px 26px 24px; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 16px; }
+.q-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.qn { font-family: var(--f-display); font-size: 20px; line-height: 1; min-width: 2.2ch; }
+.kind { font-family: var(--f-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; border: 1px solid var(--rule); color: var(--ink-soft); padding: 2px 6px; border-radius: 3px; }
+.src { font-size: 13px; color: var(--ink-soft); font-style: italic; }
+.qtext { margin: 0; font-size: 17.5px; font-weight: 700; line-height: 1.45; max-width: 68ch; }
+.choices { display: grid; gap: 8px; }
+.choices.tf { grid-template-columns: repeat(2, minmax(0, 160px)); }
+.choice { font: inherit; text-align: left; display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border: 1.5px solid var(--rule); border-radius: 6px; background: var(--sheet); color: var(--ink); cursor: pointer; }
+.choice:not(:disabled):hover { border-color: var(--navy); }
+.choice:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.choice .letter { font-family: var(--f-mono); font-weight: 700; font-size: 13px; width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid currentColor; margin-top: 1px; }
+.choice span:last-child { min-width: 0; }
+.choice:disabled { cursor: default; }
+.choice.is-right { border-color: var(--right); background: var(--right-bg); }
+.choice.is-right .letter { background: var(--right); border-color: var(--right); color: var(--sheet); }
+.choice.is-wrong { border-color: var(--wrong); background: var(--wrong-bg); }
+.choice.is-wrong .letter { background: var(--wrong); border-color: var(--wrong); color: var(--sheet); }
+.choice.faded { opacity: .55; }
+.short { display: flex; flex-direction: column; gap: 8px; }
+.short textarea { min-height: 76px; resize: vertical; }
+.short .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.feedback { border-radius: 6px; padding: 12px 14px; font-size: 15px; display: flex; flex-direction: column; gap: 4px; }
+.feedback.right { background: var(--right-bg); }
+.feedback.wrong { background: var(--wrong-bg); }
+.feedback.neutral { background: var(--paper); }
+.verdict { font-family: var(--f-mono); font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.feedback.right .verdict { color: var(--right); }
+.feedback.wrong .verdict { color: var(--wrong); }
+.feedback p { margin: 0; max-width: 68ch; }
+.feedback .model { color: var(--ink-soft); }
+
+.finish { padding: 26px; display: flex; flex-direction: column; gap: 14px; background: var(--paper); }
+.finish h3 { font-family: var(--f-display); font-weight: 400; font-size: 24px; margin: 0; }
+.finish ul { margin: 0; padding-left: 20px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.working { padding: 56px 26px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.working h2 { font-family: var(--f-display); font-weight: 400; font-size: 26px; margin: 0; }
+.working p { margin: 0; color: var(--ink-soft); }
+.pencil { width: 100%; max-width: 420px; height: 6px; border-radius: 3px; background: var(--rule); overflow: hidden; }
+.pencil i { display: block; height: 100%; width: 8%; background: var(--navy); transition: width .4s ease; }
+@media (prefers-reduced-motion: reduce) { .pencil i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <h1>Syllabus <mark>Drill</mark></h1>
+    <p>Paste a syllabus, course outline, or lecture notes. Claude writes a practice quiz from it and explains every answer.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Course material and quiz settings">
+      <div class="field">
+        <div class="field-head">
+          <label class="label" for="syllabus">Course material</label>
+          <span class="meta"><span id="wordcount">0 words</span></span>
+        </div>
+        <textarea id="syllabus" spellcheck="false" placeholder="Paste a syllabus, topic list, or notes here, or drop a .txt, .md or .pdf file."></textarea>
+        <div class="meta">
+          <button class="linkbtn" id="upload" type="button">Upload a file</button>
+          <input id="file" type="file" accept=".txt,.md,.markdown,.pdf,text/plain,text/markdown,application/pdf" hidden>
+          <button class="linkbtn" id="load-example" type="button">Use the example syllabus</button>
+          <button class="linkbtn" id="clear" type="button">Clear</button>
+          <span id="file-status"></span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="focus">Focus on (optional)</label>
+        <input id="focus" type="text" placeholder="e.g. Weeks 4–7 for the midterm">
+      </div>
+
+      <div class="field">
+        <span class="label" id="count-label">Questions</span>
+        <div class="seg" role="radiogroup" aria-labelledby="count-label">
+          <input type="radio" name="count" id="c5" value="5" checked><label for="c5">5</label>
+          <input type="radio" name="count" id="c8" value="8"><label for="c8">8</label>
+          <input type="radio" name="count" id="c12" value="12"><label for="c12">12</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label" id="diff-label">Difficulty</span>
+        <div class="seg" role="radiogroup" aria-labelledby="diff-label">
+          <input type="radio" name="diff" id="d1" value="warm-up: key terms and definitions"><label for="d1">Warm-up</label>
+          <input type="radio" name="diff" id="d2" value="exam-ready: apply concepts, not just recall them" checked><label for="d2">Exam-ready</label>
+          <input type="radio" name="diff" id="d3" value="hard: multi-step reasoning, tricky distractors, connect ideas across topics"><label for="d3">Hard</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label" id="type-label">Question types</span>
+        <div class="seg" role="group" aria-labelledby="type-label">
+          <input type="checkbox" name="types" id="t-mc" value="mc" checked><label for="t-mc">Multiple choice</label>
+          <input type="checkbox" name="types" id="t-tf" value="tf" checked><label for="t-tf">True / false</label>
+          <input type="checkbox" name="types" id="t-short" value="short" checked><label for="t-short">Short answer</label>
+        </div>
+      </div>
+
+      <button class="btn primary" id="go" type="button">Write my quiz</button>
+      <div class="notice" id="panel-msg" hidden></div>
+    </section>
+
+    <main class="booklet" id="booklet" aria-live="polite"></main>
+  </div>
+</div>
+
+<script>
+const EXAMPLE_SYLLABUS = `BIO 110: Introduction to Cell Biology (Example syllabus)
+
+Course description
+How cells are built, how they get energy, and how they copy themselves. Emphasis on connecting molecular structure to cellular function.
+
+Schedule
+Week 1 - The cell theory; prokaryotic vs. eukaryotic cells; surface-area-to-volume ratio
+Week 2 - Macromolecules: proteins, nucleic acids, lipids, carbohydrates
+Week 3 - Membranes: phospholipid bilayer, fluid mosaic model, diffusion, osmosis, active transport
+Week 4 - Organelles: nucleus, ER, Golgi, lysosomes, mitochondria, chloroplasts; endosymbiotic theory
+Week 5 - Enzymes: activation energy, active sites, competitive vs. noncompetitive inhibition
+Week 6 - Cellular respiration: glycolysis, Krebs cycle, electron transport chain, ATP synthase
+Week 7 - Midterm
+Week 8 - Photosynthesis: light reactions, Calvin cycle
+Week 9 - Cell signaling: receptors, second messengers, signal amplification
+Week 10 - The cell cycle and mitosis; checkpoints and cancer
+Week 11 - Meiosis and genetic variation
+Week 12 - DNA replication and repair
+
+Grading: problem sets 30%, midterm 30%, final 40%.`;
+
+const EXAMPLE_QUIZ = {
+  title: "BIO 110 practice: membranes, energy and organelles",
+  questions: [
+    { type: "mc", topic: "Membranes", source: "Week 3", question: "A red blood cell is placed in a solution with a much higher solute concentration than its cytoplasm. What happens?",
+      choices: ["Water enters the cell and it swells", "Water leaves the cell and it shrinks", "Solutes leave the cell by active transport", "Nothing; the membrane blocks water"], answer: 1,
+      explanation: "In a hypertonic solution, water moves by osmosis toward the higher solute concentration, which is outside the cell, so the cell loses water and shrivels." },
+    { type: "tf", topic: "Organelles", source: "Week 4", question: "Mitochondria have their own DNA, which supports the endosymbiotic theory.", answer: true,
+      explanation: "Mitochondria carry a small circular genome and bacterial-like ribosomes, consistent with descent from engulfed bacteria." },
+    { type: "mc", topic: "Enzymes", source: "Week 5", question: "Adding much more substrate overcomes an inhibitor's effect. What kind of inhibitor is it most likely to be?",
+      choices: ["Noncompetitive", "Allosteric activator", "Competitive", "Irreversible"], answer: 2,
+      explanation: "A competitive inhibitor competes for the active site, so flooding the enzyme with substrate outcompetes it. Noncompetitive inhibition can't be overcome this way." },
+    { type: "short", topic: "Cellular respiration", source: "Week 6", question: "What does the electron transport chain actually produce that ATP synthase uses to make ATP?",
+      answer: "A proton (H+) gradient across the inner mitochondrial membrane; protons flowing back through ATP synthase drive ATP production.",
+      explanation: "The ETC pumps protons into the intermembrane space. That electrochemical gradient, not the electrons themselves, powers ATP synthase." },
+    { type: "tf", topic: "Cell theory", source: "Week 1", question: "As a cell grows larger, its surface-area-to-volume ratio increases.", answer: false,
+      explanation: "Volume grows with the cube of size while surface area grows with the square, so the ratio falls. That limit is one reason cells stay small." }
+  ]
+};
+
+const $ = (s) => document.querySelector(s);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const KIND = { mc: "Multiple choice", tf: "True / false", short: "Short answer" };
+const LETTERS = "ABCDEF";
+
+const samplePromise = (window.claude && typeof window.claude.use === "function")
+  ? window.claude.use("sample").catch(() => null)
+  : Promise.resolve(null);
+let claudeOff = false;
+
+let state = { quiz: normalize(EXAMPLE_QUIZ), answers: [], isExample: true };
+state.answers = state.quiz.questions.map(() => ({ status: "open" }));
+let lastSettings = null;
+let ctl = null;
+
+/* ---------- Course material input ---------- */
+const syl = $("#syllabus");
+function store(k, v) { try { localStorage.setItem(k, v); } catch {} }
+function recall(k) { try { return localStorage.getItem(k); } catch { return null; } }
+syl.value = recall("sd-syllabus") || EXAMPLE_SYLLABUS;
+function countWords() {
+  const n = (syl.value.trim().match(/\S+/g) || []).length;
+  $("#wordcount").textContent = n.toLocaleString() + (n === 1 ? " word" : " words");
+}
+syl.addEventListener("input", () => { countWords(); store("sd-syllabus", syl.value); });
+countWords();
+$("#load-example").onclick = () => { syl.value = EXAMPLE_SYLLABUS; countWords(); store("sd-syllabus", syl.value); };
+$("#clear").onclick = () => { syl.value = ""; countWords(); store("sd-syllabus", ""); syl.focus(); };
+$("#upload").onclick = () => $("#file").click();
+$("#file").onchange = (e) => { const f = e.target.files[0]; if (f) readFile(f); e.target.value = ""; };
+syl.addEventListener("dragover", (e) => { e.preventDefault(); syl.classList.add("drag"); });
+syl.addEventListener("dragleave", () => syl.classList.remove("drag"));
+syl.addEventListener("drop", (e) => {
+  const f = e.dataTransfer?.files?.[0];
+  syl.classList.remove("drag");
+  if (f) { e.preventDefault(); readFile(f); }
+});
+
+function loadScript(src) {
+  return new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("load")); document.head.appendChild(s); });
+}
+async function pdfText(file) {
+  if (!window.pdfjsLib) {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    // Loading the worker as a plain script lets pdf.js run it on the main thread.
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
+  }
+  const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false }).promise;
+  const pages = [];
+  for (let i = 1; i <= Math.min(pdf.numPages, 60); i++) {
+    const c = await (await pdf.getPage(i)).getTextContent();
+    pages.push(c.items.map((it) => it.str + (it.hasEOL ? "\n" : " ")).join(""));
+  }
+  return pages.join("\n\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+async function readFile(file) {
+  const status = $("#file-status");
+  status.textContent = "Reading " + file.name + "…";
+  try {
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    const text = isPdf ? await pdfText(file) : await file.text();
+    if (!text.trim()) throw new Error("empty");
+    syl.value = text; countWords(); store("sd-syllabus", text);
+    status.textContent = "Loaded " + file.name;
+  } catch {
+    status.textContent = "Couldn't read text from " + file.name + ". Copy the text and paste it in instead.";
+  }
+}
+
+/* ---------- Quiz generation ---------- */
+function settings() {
+  const types = [...document.querySelectorAll('input[name="types"]:checked')].map((i) => i.value);
+  return {
+    material: syl.value.trim(),
+    focus: $("#focus").value.trim(),
+    count: Number(document.querySelector('input[name="count"]:checked').value),
+    difficulty: document.querySelector('input[name="diff"]:checked').value,
+    types: types.length ? types : ["mc"],
+  };
+}
+
+function buildPrompt(s) {
+  const typeNames = s.types.map((t) => ({ mc: '"mc" (multiple choice, 4 choices)', tf: '"tf" (true/false)', short: '"short" (short answer, one or two sentences)' }[t])).join(", ");
+  return `You are writing a practice quiz for a student studying from the course material below.
+
+<course_material>
+${s.material.slice(0, 60000)}
+</course_material>
+
+${s.focus ? "Focus the quiz on: " + s.focus + "\n" : ""}Write exactly ${s.count} questions.
+Difficulty: ${s.difficulty}.
+Question types to use (mix them): ${typeNames}.
+
+Rules:
+- Test the subject matter the course teaches (its concepts, terms, methods, ideas), using your own knowledge of those topics. Do not ask about course logistics such as grading weights, office hours or due dates.
+- Spread the questions across the topics rather than clustering on one.
+- Multiple choice: 4 plausible choices, exactly one correct; vary which position is correct.
+- True/false: use a mix of true and false statements.
+- "source": a short pointer to where the topic appears in the material, such as "Week 3" or "Unit 2: Markets".
+- "topic": 1-3 words naming the concept.
+- "explanation": 1-2 sentences that teach why the answer is right.
+
+Reply with only JSON in exactly this shape:
+{"title": "short quiz title naming the course and topics",
+ "questions": [
+  {"type": "mc", "topic": "...", "source": "...", "question": "...", "choices": ["...", "...", "...", "..."], "answer": 2, "explanation": "..."},
+  {"type": "tf", "topic": "...", "source": "...", "question": "statement to judge", "answer": false, "explanation": "..."},
+  {"type": "short", "topic": "...", "source": "...", "question": "...", "answer": "model answer", "explanation": "..."}
+ ]}
+"answer" is the 0-based index of the correct choice for "mc", a boolean for "tf", and a model answer string for "short".`;
+}
+
+function normalize(raw) {
+  const qs = (Array.isArray(raw?.questions) ? raw.questions : []).map((q) => {
+    if (!q || typeof q !== "object") return null;
+    const type = q.type === "tf" || q.type === "short" ? q.type : "mc";
+    const out = { type, topic: String(q.topic || ""), source: String(q.source || ""), question: String(q.question || "").trim(), explanation: String(q.explanation || "") };
+    if (!out.question) return null;
+    if (type === "mc") {
+      const ch = Array.isArray(q.choices) ? q.choices.map(String).slice(0, 6) : [];
+      const a = Number(q.answer);
+      if (ch.length < 2 || !Number.isInteger(a) || a < 0 || a >= ch.length) return null;
+      out.choices = ch; out.answer = a;
+    } else if (type === "tf") {
+      out.answer = q.answer === true || String(q.answer).toLowerCase() === "true";
+    } else {
+      out.answer = String(q.answer || "");
+    }
+    return out;
+  }).filter(Boolean);
+  return { title: String(raw?.title || "Practice quiz"), questions: qs };
+}
+
+const ERR = {
+  not_granted: "Claude wasn't allowed for this page. You can change that from the artifact's permissions menu.",
+  sampling_disabled: "Claude isn't available for this account.",
+  rate_limited: "Too many requests right now. Wait a minute, then try again.",
+  session_expired: "Your session expired. Sign in to claude.ai again, then retry.",
+  prompt_too_large: "That material is too long. Paste just the schedule or topic list.",
+  refused: "Claude declined to write a quiz from this material. Try different material.",
+  invalid_json: "The quiz came back garbled. Try again.",
+  empty_completion: "Claude returned nothing. Try again, maybe with fewer questions.",
+};
+const errText = (e) => ERR[e?.code] || "Something went wrong reaching Claude. Try again.";
+const HIDE = new Set(["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"]);
+
+function panelMsg(text, isError) {
+  const m = $("#panel-msg");
+  m.hidden = !text; m.textContent = text || ""; m.classList.toggle("error", !!isError);
+}
+
+async function generate(s) {
+  if (s.material.split(/\s+/).length < 8) { panelMsg("Add some course material first: a syllabus, a topic list, or notes.", true); syl.focus(); return; }
+  const sample = await samplePromise;
+  if (!sample || claudeOff) { panelMsg("Writing new quizzes needs Claude, which isn't available in this view. Open this page on claude.ai while signed in.", true); return; }
+  panelMsg("");
+  lastSettings = s;
+  const prev = state;
+  ctl = new AbortController();
+  renderWorking(s.count);
+  $("#go").disabled = true;
+  try {
+    const raw = await sample.json(buildPrompt(s), {
+      signal: ctl.signal, cache: false,
+      onText: ({ text }) => {
+        const n = (text.match(/"question"\s*:/g) || []).length;
+        setProgress(n, s.count);
+      },
+    });
+    const quiz = normalize(raw);
+    if (!quiz.questions.length) throw { code: "invalid_json" };
+    state = { quiz, answers: quiz.questions.map(() => ({ status: "open" })), isExample: false };
+    render();
+    $("#booklet").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  } catch (e) {
+    state = prev; render();
+    if (e?.code !== "cancelled") panelMsg(errText(e), true);
+    if (HIDE.has(e?.code)) claudeOff = true;
+  } finally {
+    $("#go").disabled = false; ctl = null;
+  }
+}
+$("#go").onclick = () => generate(settings());
+
+/* ---------- Rendering ---------- */
+function renderWorking(total) {
+  const b = $("#booklet"); b.replaceChildren();
+  const w = el("div", "working");
+  w.append(el("span", "label", "Writing your quiz"), el("h2", null, "Reading your course material…"));
+  const bar = el("div", "pencil"); bar.append(el("i")); bar.id = "bar";
+  const p = el("p", null, "This usually takes 10–40 seconds."); p.id = "progress-note";
+  const stop = el("button", "btn", "Stop"); stop.type = "button"; stop.onclick = () => ctl?.abort();
+  w.append(bar, p, stop);
+  b.append(w);
+}
+function setProgress(n, total) {
+  const h = document.querySelector(".working h2"); const bar = document.querySelector("#bar i");
+  if (!h || !bar) return;
+  if (n > 0) h.textContent = "Writing question " + Math.min(n, total) + " of " + total + "…";
+  bar.style.width = Math.max(8, Math.min(100, (n / total) * 100)) + "%";
+}
+
+function render() {
+  const { quiz, answers, isExample } = state;
+  const b = $("#booklet"); b.replaceChildren();
+
+  const cover = el("header", "cover");
+  const top = el("div", "cover-top");
+  top.append(el("span", "label", quiz.questions.length + " questions"));
+  if (isExample) top.append(el("span", "example-pill", "Example quiz"));
+  const h = el("h2", null, quiz.title);
+  const bar = el("div", "scorebar");
+  const done = answers.filter((a) => a.status === "right" || a.status === "wrong").length;
+  const right = answers.filter((a) => a.status === "right").length;
+  const sc = el("div", "score"); sc.innerHTML = "<b></b> correct · <span></span> answered";
+  sc.querySelector("b").textContent = right + "/" + quiz.questions.length;
+  sc.querySelector("span").textContent = done + "/" + quiz.questions.length;
+  const ticks = el("div", "ticks");
+  answers.forEach((a, i) => {
+    const t = el("button", "tick " + (a.status === "right" || a.status === "wrong" ? a.status : ""), String(i + 1));
+    t.type = "button"; t.setAttribute("aria-label", "Go to question " + (i + 1));
+    t.onclick = () => document.getElementById("q-" + i)?.scrollIntoView({ block: "start" });
+    ticks.append(t);
+  });
+  bar.append(sc, ticks);
+  cover.append(top, h, bar);
+  b.append(cover);
+
+  const list = el("ol", "questions");
+  quiz.questions.forEach((q, i) => list.append(renderQuestion(q, i)));
+  b.append(list);
+
+  if (done === quiz.questions.length) b.append(renderFinish());
+}
+
+function renderQuestion(q, i) {
+  const a = state.answers[i];
+  const li = el("li", "q"); li.id = "q-" + i;
+  const head = el("div", "q-head");
+  head.append(el("span", "qn", String(i + 1)), el("span", "kind", KIND[q.type]));
+  if (q.topic || q.source) head.append(el("span", "src", [q.topic, q.source].filter(Boolean).join(" · ")));
+  li.append(head, el("p", "qtext", q.question));
+  const answered = a.status === "right" || a.status === "wrong";
+
+  if (q.type === "mc" || q.type === "tf") {
+    const opts = q.type === "mc" ? q.choices : ["True", "False"];
+    const correctIdx = q.type === "mc" ? q.answer : (q.answer ? 0 : 1);
+    const wrap = el("div", "choices" + (q.type === "tf" ? " tf" : ""));
+    opts.forEach((text, j) => {
+      const btn = el("button", "choice"); btn.type = "button";
+      btn.append(el("span", "letter", q.type === "mc" ? LETTERS[j] : text[0]), el("span", null, text));
+      if (answered) {
+        btn.disabled = true;
+        if (j === correctIdx) btn.classList.add("is-right");
+        else if (j === a.given) btn.classList.add("is-wrong");
+        else btn.classList.add("faded");
+      }
+      btn.onclick = () => { state.answers[i] = { status: j === correctIdx ? "right" : "wrong", given: j }; rerenderKeepingScroll(i); };
+      wrap.append(btn);
+    });
+    li.append(wrap);
+    if (answered) li.append(feedback(a.status, null, q.explanation, a.status === "wrong" && q.type === "mc" ? "Answer: " + LETTERS[correctIdx] + ". " + q.choices[correctIdx] : null));
+  } else {
+    li.append(renderShort(q, i, a));
+  }
+  return li;
+}
+
+function feedback(status, note, explanation, model) {
+  const f = el("div", "feedback " + status);
+  f.append(el("span", "verdict", status === "right" ? "Correct" : status === "wrong" ? "Not quite" : "Check yourself"));
+  if (note) f.append(el("p", null, note));
+  if (model) f.append(el("p", "model", model));
+  if (explanation) f.append(el("p", null, explanation));
+  return f;
+}
+
+function renderShort(q, i, a) {
+  const box = el("div", "short");
+  const ta = el("textarea"); ta.id = "ans-" + i; ta.placeholder = "Type your answer in a sentence or two"; ta.value = a.given || "";
+  ta.setAttribute("aria-label", "Your answer to question " + (i + 1));
+  const answered = a.status === "right" || a.status === "wrong";
+  ta.disabled = answered || a.status === "grading";
+  box.append(ta);
+  if (answered) {
+    box.append(feedback(a.status, a.note, q.explanation, "Model answer: " + q.answer));
+    return box;
+  }
+  if (a.status === "self") {
+    const f = feedback("neutral", null, q.explanation, "Model answer: " + q.answer);
+    const row = el("div", "row");
+    const yes = el("button", "btn", "I got it"); yes.type = "button";
+    const no = el("button", "btn", "I missed it"); no.type = "button";
+    yes.onclick = () => { state.answers[i] = { ...a, status: "right" }; rerenderKeepingScroll(i); };
+    no.onclick = () => { state.answers[i] = { ...a, status: "wrong" }; rerenderKeepingScroll(i); };
+    row.append(yes, no); f.append(row); box.append(f);
+    return box;
+  }
+  const row = el("div", "row");
+  const check = el("button", "btn primary", a.status === "grading" ? "Grading…" : "Check answer"); check.type = "button";
+  check.disabled = a.status === "grading";
+  const reveal = el("button", "linkbtn", "Show the answer"); reveal.type = "button";
+  reveal.onclick = () => { state.answers[i] = { status: "self", given: ta.value }; rerenderKeepingScroll(i); };
+  check.onclick = () => gradeShort(q, i, ta.value);
+  row.append(check, reveal);
+  box.append(row);
+  if (a.error) box.append(el("div", "notice error", a.error));
+  return box;
+}
+
+async function gradeShort(q, i, given) {
+  if (!given.trim()) { document.getElementById("ans-" + i)?.focus(); return; }
+  const sample = await samplePromise;
+  if (!sample || claudeOff) { state.answers[i] = { status: "self", given }; rerenderKeepingScroll(i); return; }
+  state.answers[i] = { status: "grading", given }; rerenderKeepingScroll(i);
+  try {
+    const r = await sample.json(`Grade a student's short answer on a practice quiz. Judge whether they got the key idea; ignore spelling and wording differences, and accept answers that are correct but phrased differently from the model answer.
+
+Question: ${q.question}
+Model answer: ${q.answer}
+Student answer: ${given.slice(0, 2000)}
+
+Reply with only JSON: {"correct": true or false, "feedback": "one or two sentences speaking to the student: what they got right and anything missing"}`, { modelTier: "quick" });
+    state.answers[i] = { status: r?.correct ? "right" : "wrong", given, note: String(r?.feedback || "") };
+  } catch (e) {
+    if (HIDE.has(e?.code)) { claudeOff = true; state.answers[i] = { status: "self", given }; }
+    else state.answers[i] = { status: "open", given, error: errText(e) };
+  }
+  rerenderKeepingScroll(i);
+}
+
+function rerenderKeepingScroll(i) {
+  const node = document.getElementById("q-" + i);
+  const before = node ? node.getBoundingClientRect().top : 0;
+  render();
+  const after = document.getElementById("q-" + i);
+  if (after) window.scrollBy(0, after.getBoundingClientRect().top - before);
+}
+
+function renderFinish() {
+  const { quiz, answers } = state;
+  const right = answers.filter((a) => a.status === "right").length;
+  const missed = quiz.questions.filter((_, i) => answers[i].status === "wrong");
+  const f = el("section", "finish");
+  const pct = Math.round((right / quiz.questions.length) * 100);
+  f.append(el("span", "label", "Results"), el("h3", null, right + " of " + quiz.questions.length + " correct (" + pct + "%)"));
+  if (missed.length) {
+    f.append(el("p", null, "Topics to review:"));
+    const ul = el("ul");
+    [...new Set(missed.map((q) => [q.topic, q.source].filter(Boolean).join(" · ") || q.question))].forEach((t) => ul.append(el("li", null, t)));
+    f.append(ul);
+  } else {
+    f.append(el("p", null, "Clean sweep. Try a harder quiz or a different set of weeks."));
+  }
+  const actions = el("div", "actions");
+  if (missed.length) {
+    const drill = el("button", "btn primary", "Drill my missed topics"); drill.type = "button";
+    drill.onclick = () => {
+      const base = lastSettings || settings();
+      const topics = missed.map((q) => q.topic || q.question).join("; ");
+      generate({ ...settings(), material: base.material || settings().material, focus: "the student just missed questions on these topics, so test them again from new angles: " + topics });
+    };
+    actions.append(drill);
+  }
+  const retake = el("button", "btn", "Retake this quiz"); retake.type = "button";
+  retake.onclick = () => { state.answers = quiz.questions.map(() => ({ status: "open" })); render(); $("#booklet").scrollIntoView({ block: "start" }); };
+  const fresh = el("button", "btn", "New quiz"); fresh.type = "button";
+  fresh.onclick = () => generate(settings());
+  actions.append(retake, fresh);
+  f.append(actions);
+  return f;
+}
+
+render();
+samplePromise.then((s) => {
+  if (!s) panelMsg("You can try the example quiz here. Writing new quizzes needs Claude: open this page on claude.ai while signed in.", false);
+});
+</script>
