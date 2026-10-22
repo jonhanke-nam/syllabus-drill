@@ -156,29 +156,14 @@ textarea:focus, input:focus { outline: none; border-color: var(--navy); box-shad
 <div class="wrap">
   <header class="masthead">
     <h1>Syllabus <mark>Drill</mark></h1>
-    <p>Paste a syllabus, course outline, or lecture notes. Claude writes a practice quiz from it and explains every answer.</p>
+    <p>Pick a course. Claude writes a practice quiz from its syllabus and explains every answer.</p>
   </header>
 
   <div class="grid">
     <section class="panel" aria-label="Course material and quiz settings">
       <div class="field">
-        <div class="field-head">
-          <label class="label" for="syllabus">Course material</label>
-          <span class="meta"><span id="wordcount">0 words</span></span>
-        </div>
-        <textarea id="syllabus" spellcheck="false" placeholder="Paste a syllabus, topic list, or notes here, or drop a .txt, .md or .pdf file."></textarea>
-        <div class="meta">
-          <button class="linkbtn" id="upload" type="button">Upload a file</button>
-          <input id="file" type="file" accept=".txt,.md,.markdown,.pdf,text/plain,text/markdown,application/pdf" hidden>
-          <button class="linkbtn" id="load-example" type="button">Use the example syllabus</button>
-          <button class="linkbtn" id="clear" type="button">Clear</button>
-          <span id="file-status"></span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="label" for="focus">Focus on (optional)</label>
-        <input id="focus" type="text" placeholder="e.g. Weeks 4–7 for the midterm">
+        <span class="label" id="course-label">Course</span>
+        <div class="seg" role="radiogroup" aria-labelledby="course-label" id="courses"></div>
       </div>
 
       <div class="field">
@@ -217,27 +202,6 @@ textarea:focus, input:focus { outline: none; border-color: var(--navy); box-shad
 </div>
 
 <script>
-const EXAMPLE_SYLLABUS = `BIO 110: Introduction to Cell Biology (Example syllabus)
-
-Course description
-How cells are built, how they get energy, and how they copy themselves. Emphasis on connecting molecular structure to cellular function.
-
-Schedule
-Week 1 - The cell theory; prokaryotic vs. eukaryotic cells; surface-area-to-volume ratio
-Week 2 - Macromolecules: proteins, nucleic acids, lipids, carbohydrates
-Week 3 - Membranes: phospholipid bilayer, fluid mosaic model, diffusion, osmosis, active transport
-Week 4 - Organelles: nucleus, ER, Golgi, lysosomes, mitochondria, chloroplasts; endosymbiotic theory
-Week 5 - Enzymes: activation energy, active sites, competitive vs. noncompetitive inhibition
-Week 6 - Cellular respiration: glycolysis, Krebs cycle, electron transport chain, ATP synthase
-Week 7 - Midterm
-Week 8 - Photosynthesis: light reactions, Calvin cycle
-Week 9 - Cell signaling: receptors, second messengers, signal amplification
-Week 10 - The cell cycle and mitosis; checkpoints and cancer
-Week 11 - Meiosis and genetic variation
-Week 12 - DNA replication and repair
-
-Grading: problem sets 30%, midterm 30%, final 40%.`;
-
 const EXAMPLE_QUIZ = {
   title: "BIO 110 practice: membranes, energy and organelles",
   questions: [
@@ -272,66 +236,22 @@ state.answers = state.quiz.questions.map(() => ({ status: "open" }));
 let lastSettings = null;
 let ctl = null;
 
-/* ---------- Course material input ---------- */
-const syl = $("#syllabus");
-function store(k, v) { try { localStorage.setItem(k, v); } catch {} }
-function recall(k) { try { return localStorage.getItem(k); } catch { return null; } }
-syl.value = recall("sd-syllabus") || EXAMPLE_SYLLABUS;
-function countWords() {
-  const n = (syl.value.trim().match(/\S+/g) || []).length;
-  $("#wordcount").textContent = n.toLocaleString() + (n === 1 ? " word" : " words");
-}
-syl.addEventListener("input", () => { countWords(); store("sd-syllabus", syl.value); });
-countWords();
-$("#load-example").onclick = () => { syl.value = EXAMPLE_SYLLABUS; countWords(); store("sd-syllabus", syl.value); };
-$("#clear").onclick = () => { syl.value = ""; countWords(); store("sd-syllabus", ""); syl.focus(); };
-$("#upload").onclick = () => $("#file").click();
-$("#file").onchange = (e) => { const f = e.target.files[0]; if (f) readFile(f); e.target.value = ""; };
-syl.addEventListener("dragover", (e) => { e.preventDefault(); syl.classList.add("drag"); });
-syl.addEventListener("dragleave", () => syl.classList.remove("drag"));
-syl.addEventListener("drop", (e) => {
-  const f = e.dataTransfer?.files?.[0];
-  syl.classList.remove("drag");
-  if (f) { e.preventDefault(); readFile(f); }
+/* ---------- Course picker ---------- */
+const COURSES = [{"name": "14.01 Principles of Microeconomics", "text": "# 14.01 Principles of Microeconomics (MIT, Fall 2023)\nSource: https://ocw.mit.edu/courses/14-01-principles-of-microeconomics-fall-2023/ (MIT OpenCourseWare, CC BY-NC-SA)\n\n## Lectures\n1. Introduction and Supply & Demand\n2. Preferences and Utility Functions\n3. Budget Constraints and Constrained Choice\n4. Demand Curves and Income/Substitution Effects\n5. Production Theory\n6. Costs\n7. Competition I\n8. Competition II\n9. Supply and Demand & Consumer/Producer Surplus\n10. Welfare Economics\n11. Monopoly I\n12. Monopoly II\n13. Oligopoly I\n14. Oligopoly II\n15. Input Markets I: Labor Market\n16. Input Markets II: Labor and Capital\n17. Making Choices over Time\n18. Introduction to Trade\n19. International Trade: Welfare and Policy\n20. Uncertainty\n21. Social Insurance\n22. Efficiency and Equity\n23. Government Redistribution and Taxation\n24. Externalities\n25. Behavioral Economics\n26. Healthcare Economics\n"}, {"name": "18.06 Linear Algebra", "text": "# 18.06 Linear Algebra (MIT, Spring 2010, Prof. Gilbert Strang)\nSource: https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/ (MIT OpenCourseWare, CC BY-NC-SA)\n\nText: Strang, Introduction to Linear Algebra. Prerequisite: multivariable calculus.\nGoals: solving Ax = b by elimination, the four fundamental subspaces, least squares, Gram-Schmidt and QR, determinants, eigenvalues and eigenvectors, symmetric and positive definite matrices, the SVD, and applications.\n\n## Sessions\n1. The geometry of linear equations\n2. Elimination with matrices\n3. Matrix operations and inverses\n4. LU and LDU factorization\n5. Transposes and permutations\n6. Vector spaces and subspaces\n7. The nullspace: Solving Ax = 0\n8. Rectangular PA = LU and Ax = b\n9. Row reduced echelon form\n10. Basis and dimension\n11. The four fundamental subspaces\n12. Exam 1: Chapters 1 to 3.4\n13. Graphs and networks\n14. Orthogonality\n15. Projections and subspaces\n16. Least squares approximations\n17. Gram-Schmidt and A = QR\n18. Properties of determinants\n19. Formulas for determinants\n20. Applications of determinants\n21. Eigenvalues and eigenvectors\n22. Diagonalization\n23. Markov matrices\n24. Review for exam 2\n25. Exam 2\n26. Differential equations\n27. Symmetric matrices\n28. Positive definite matrices\n29. Matrices in engineering\n30. Similar matrices\n31. Singular value decomposition\n32. Fourier series, FFT, complex matrices\n33. Linear transformations\n34. Choice of basis\n35. Linear programming\n36. Course review\n37. Exam 3\n38. Numerical linear algebra\n39. Computational science\n40. Final exam\n"}, {"name": "6.0001 Introduction to Computer Science and Programming in Python", "text": "# 6.0001 Introduction to Computer Science and Programming in Python (MIT, Fall 2016)\nSource: https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/ (MIT OpenCourseWare, CC BY-NC-SA)\n\n## Lectures\n1. What is computation?\n2. Branching and Iteration\n3. String Manipulation, Guess and Check, Approximations, Bisection\n4. Decomposition, Abstractions, Functions\n5. Tuples, Lists, Aliasing, Mutability, Cloning\n6. Recursion, Dictionaries\n7. Testing, Debugging, Exceptions, Assertions\n8. Object Oriented Programming\n9. Python Classes and Inheritance\n10. Understanding Program Efficiency, Part 1\n11. Understanding Program Efficiency, Part 2\n12. Searching and Sorting\n"}, {"name": "7.016 Introductory Biology", "text": "# 7.016 Introductory Biology (MIT, Fall 2018)\nSource: https://ocw.mit.edu/courses/7-016-introductory-biology-fall-2018/ (MIT OpenCourseWare, CC BY-NC-SA)\n\n## Lectures\n1. Introduction and course organization\n2. Chemical bonding and molecular interactions; Lipids and membranes\n3. Structures of amino acids, peptides and proteins\n4. Enzymes and metabolism\n5. Carbohydrates and glycoproteins\n6. Nucleic acids\n7. Replication\n8. Transcription\n9. Chromatin remodeling and splicing\n10. Translation\n11. Cells, the simplest functional units\n12. Genetics 1: Cell division and segregating genetic material\n13. Genetics 2: Rules of inheritance\n14. Genetics 3: Linkage, crossing over\n15. Genetics 4: The power of model organisms in biological discovery\n16. Recombinant DNA, cloning, and editing\n17. Genomes and DNA sequencing\n18. SNPs and human genetics\n19. Cell trafficking and protein localization\n20. Cell signaling 1: Overview\n21. Cell signaling 2: Examples\n22. Neurons, action potential, and optogenetics\n23. Cell cycle and checkpoints\n24. Stem cells, apoptosis, and tissue homeostasis\n25. Cancer 1\n26. Cancer 2\n27. Visualizing life: Dyes and stains\n28. Visualizing life: Fluorescent proteins\n29. Cell imaging techniques\n30. Immunology 1: Diversity, specificity, and B cells\n31. Immunology 2: Memory, T cells, and autoimmunity\n32. Infectious disease, viruses, and bacteria\n33. Bacteria and antibiotic resistance\n34. Viruses and anti-viral resistance\n35. Reproductive cloning and embryonic stem cells\n36. \"In the news\"\n"}];
+const picker = $("#courses");
+COURSES.forEach((c, i) => {
+  const id = "course-" + i;
+  const inp = el("input"); inp.type = "radio"; inp.name = "course"; inp.id = id; inp.value = i; if (i === 0) inp.checked = true;
+  const lab = el("label", null, c.name); lab.htmlFor = id;
+  picker.append(inp, lab);
 });
-
-function loadScript(src) {
-  return new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("load")); document.head.appendChild(s); });
-}
-async function pdfText(file) {
-  if (!window.pdfjsLib) {
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
-    // Loading the worker as a plain script lets pdf.js run it on the main thread.
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
-  }
-  const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false }).promise;
-  const pages = [];
-  for (let i = 1; i <= Math.min(pdf.numPages, 60); i++) {
-    const c = await (await pdf.getPage(i)).getTextContent();
-    pages.push(c.items.map((it) => it.str + (it.hasEOL ? "\n" : " ")).join(""));
-  }
-  return pages.join("\n\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-}
-async function readFile(file) {
-  const status = $("#file-status");
-  status.textContent = "Reading " + file.name + "…";
-  try {
-    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
-    const text = isPdf ? await pdfText(file) : await file.text();
-    if (!text.trim()) throw new Error("empty");
-    syl.value = text; countWords(); store("sd-syllabus", text);
-    status.textContent = "Loaded " + file.name;
-  } catch {
-    status.textContent = "Couldn't read text from " + file.name + ". Copy the text and paste it in instead.";
-  }
-}
 
 /* ---------- Quiz generation ---------- */
 function settings() {
   const types = [...document.querySelectorAll('input[name="types"]:checked')].map((i) => i.value);
   return {
-    material: syl.value.trim(),
-    focus: $("#focus").value.trim(),
+    material: COURSES[Number(document.querySelector('input[name="course"]:checked').value)].text,
+    focus: "",
     count: Number(document.querySelector('input[name="count"]:checked').value),
     difficulty: document.querySelector('input[name="diff"]:checked').value,
     types: types.length ? types : ["mc"],
@@ -409,7 +329,7 @@ function panelMsg(text, isError) {
 }
 
 async function generate(s) {
-  if (s.material.split(/\s+/).length < 8) { panelMsg("Add some course material first: a syllabus, a topic list, or notes.", true); syl.focus(); return; }
+  if (s.material.split(/\s+/).length < 8) { return; }
   const sample = await samplePromise;
   if (!sample || claudeOff) { panelMsg("Writing new quizzes needs Claude, which isn't available in this view. Open this page on claude.ai while signed in.", true); return; }
   panelMsg("");
