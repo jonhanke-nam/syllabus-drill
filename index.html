@@ -231,8 +231,10 @@ const samplePromise = (window.claude && typeof window.claude.use === "function")
   : Promise.resolve(null);
 let claudeOff = false;
 
-let state = { quiz: normalize(EXAMPLE_QUIZ), answers: [], isExample: true };
-state.answers = state.quiz.questions.map(() => ({ status: "open" }));
+const freshState = (quiz, isExample) => ({ quiz, answers: quiz.questions.map(() => ({ status: "open" })), isExample });
+// One quiz per course, keyed by course index. `state` is the quiz on screen (null: none yet).
+const quizzes = {};
+let state = null;
 let lastSettings = null;
 let ctl = null;
 
@@ -241,16 +243,23 @@ const COURSES = [{"name": "14.01 Principles of Microeconomics", "text": "# 14.01
 const picker = $("#courses");
 COURSES.forEach((c, i) => {
   const id = "course-" + i;
-  const inp = el("input"); inp.type = "radio"; inp.name = "course"; inp.id = id; inp.value = i; if (i === 0) inp.checked = true;
+  const inp = el("input"); inp.type = "radio"; inp.name = "course"; inp.id = id; inp.value = i;
+  inp.onchange = showCourse;
   const lab = el("label", null, c.name); lab.htmlFor = id;
   picker.append(inp, lab);
 });
+const EXAMPLE_COURSE = COURSES.findIndex((c) => /Biology/.test(c.name));
+quizzes[EXAMPLE_COURSE] = freshState(normalize(EXAMPLE_QUIZ), true);
+document.getElementById("course-" + EXAMPLE_COURSE).checked = true;
+const courseIdx = () => Number(document.querySelector('input[name="course"]:checked').value);
+const setPickerLocked = (on) => document.querySelectorAll('input[name="course"]').forEach((i) => { i.disabled = on; });
+function showCourse() { panelMsg(""); state = quizzes[courseIdx()] || null; render(); }
 
 /* ---------- Quiz generation ---------- */
 function settings() {
   const types = [...document.querySelectorAll('input[name="types"]:checked')].map((i) => i.value);
   return {
-    material: COURSES[Number(document.querySelector('input[name="course"]:checked').value)].text,
+    material: COURSES[courseIdx()].text,
     focus: "",
     count: Number(document.querySelector('input[name="count"]:checked').value),
     difficulty: document.querySelector('input[name="diff"]:checked').value,
@@ -342,10 +351,11 @@ async function generate(s) {
   if (!sample || claudeOff) { panelMsg("Writing new quizzes needs Claude, which isn't available in this view. Open this page on claude.ai while signed in.", true); return; }
   panelMsg("");
   lastSettings = s;
-  const prev = state;
+  const idx = courseIdx();
   ctl = new AbortController();
   renderWorking(s.count);
   $("#go").disabled = true;
+  setPickerLocked(true);
   try {
     let raw;
     try {
@@ -363,15 +373,16 @@ async function generate(s) {
     }
     const quiz = normalize(raw);
     if (!quiz.questions.length) throw { code: "invalid_json" };
-    state = { quiz, answers: quiz.questions.map(() => ({ status: "open" })), isExample: false };
+    state = quizzes[idx] = freshState(quiz, false);
     render();
     $("#booklet").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   } catch (e) {
-    state = prev; render();
+    state = quizzes[idx] || null; render();
     if (e?.code !== "cancelled") panelMsg(errText(e), true);
     if (HIDE.has(e?.code)) claudeOff = true;
   } finally {
     $("#go").disabled = false; ctl = null;
+    setPickerLocked(false);
   }
 }
 $("#go").onclick = () => generate(settings());
@@ -395,8 +406,17 @@ function setProgress(n, total) {
 }
 
 function render() {
-  const { quiz, answers, isExample } = state;
   const b = $("#booklet"); b.replaceChildren();
+  if (!state) {
+    const w = el("div", "working");
+    w.append(el("span", "label", "No quiz yet"), el("h2", null, COURSES[courseIdx()].name));
+    w.append(el("p", null, "Choose your settings, then write a quiz from this course's syllabus."));
+    const go = el("button", "btn primary", "Write my quiz"); go.type = "button"; go.id = "go-empty";
+    go.onclick = () => generate(settings());
+    w.append(go); b.append(w);
+    return;
+  }
+  const { quiz, answers, isExample } = state;
 
   const cover = el("header", "cover");
   const top = el("div", "cover-top");
@@ -504,9 +524,10 @@ function renderShort(q, i, a) {
 
 async function gradeShort(q, i, given) {
   if (!given.trim()) { document.getElementById("ans-" + i)?.focus(); return; }
+  const st = state;
   const sample = await samplePromise;
-  if (!sample || claudeOff) { state.answers[i] = { status: "self", given }; rerenderKeepingScroll(i); return; }
-  state.answers[i] = { status: "grading", given }; rerenderKeepingScroll(i);
+  if (!sample || claudeOff) { st.answers[i] = { status: "self", given }; rerenderKeepingScroll(i); return; }
+  st.answers[i] = { status: "grading", given }; rerenderKeepingScroll(i);
   try {
     const r = await sample.json(`Grade a student's short answer on a practice quiz. Judge whether they got the key idea; ignore spelling and wording differences, and accept answers that are correct but phrased differently from the model answer.
 
@@ -515,12 +536,12 @@ Model answer: ${q.answer}
 Student answer: ${given.slice(0, 2000)}
 
 Reply with only JSON: {"correct": true or false, "feedback": "one or two sentences speaking to the student: what they got right and anything missing"}`, { modelTier: "quick" });
-    state.answers[i] = { status: r?.correct ? "right" : "wrong", given, note: String(r?.feedback || "") };
+    st.answers[i] = { status: r?.correct ? "right" : "wrong", given, note: String(r?.feedback || "") };
   } catch (e) {
-    if (HIDE.has(e?.code)) { claudeOff = true; state.answers[i] = { status: "self", given }; }
-    else state.answers[i] = { status: "open", given, error: errText(e) };
+    if (HIDE.has(e?.code)) { claudeOff = true; st.answers[i] = { status: "self", given }; }
+    else st.answers[i] = { status: "open", given, error: errText(e) };
   }
-  rerenderKeepingScroll(i);
+  if (state === st) rerenderKeepingScroll(i);
 }
 
 function rerenderKeepingScroll(i) {
@@ -565,7 +586,7 @@ function renderFinish() {
   return f;
 }
 
-render();
+showCourse();
 samplePromise.then((s) => {
   if (!s) panelMsg("You can try the example quiz here. Writing new quizzes needs Claude: open this page on claude.ai while signed in.", false);
 });
